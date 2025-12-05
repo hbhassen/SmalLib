@@ -40,6 +40,14 @@
         └─────────────────────────────────────────┘
 ~~~
 
+## Note de relecture (mars 2025)
+
+- **Cohérence d'architecture vérifiée** : la séparation Public API → Modules internes → Dépendances reste alignée avec une livraison en JAR réutilisable et un déploiement WAR/EAR par-dessus.
+- **Parcours fonctionnels validés** : les enchaînements AuthnRequest/Response et SLO décrits correspondent aux échanges Keycloak standards (Redirect/POST + RelayState sécurisé).
+- **Couverture des modules** : les sections dédiées `config`, `saml`, `binding`, `security`, `metadata`, `util` et `integration` décrivent bien les responsabilités attendues et les points d'extension (loaders, stores, handlers).
+- **Exigences de sécurité** : la checklist SAML (signatures, audience, horodatage, Recipient, InResponseTo, relaystate opaque) reste complète et cohérente avec OpenSAML 4.3+.
+- **Déploiement WildFly** : les recommandations d'initialisation OpenSAML et de placement des keystores/truststores sont confirmées pour un démarrage unique du runtime.
+
 
 ## II. Module `config` – Gestion de la configuration
 
@@ -85,7 +93,7 @@ com.hmiso.saml.config
 │
 ├── KeystoreConfig
 │   ├─ path: Path (ou URI)
-│   ├─ password: String (SecureString recommend.)
+│   ├─ password: String (SecureString recommandé)
 │   ├─ keyAlias: String
 │   ├─ keyPassword: String
 │   └─ type: KeystoreType (PKCS12, JKS, PEM…)
