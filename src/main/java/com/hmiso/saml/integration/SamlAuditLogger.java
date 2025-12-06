@@ -1,14 +1,19 @@
 package com.hmiso.saml.integration;
 
 import com.hmiso.saml.api.SamlPrincipal;
+import com.hmiso.saml.binding.BindingMessage;
 
 /**
- * Interface d'audit pour les événements SAML majeurs.
+ * Interface d'audit pour les événements SAML majeurs (VII - Logging & Audit).
  */
 public interface SamlAuditLogger {
-    void onLoginSuccess(SamlPrincipal principal);
+    void logAuthnRequestInitiated(BindingMessage authnRequest);
 
-    void onLogout(String sessionIndex);
+    void logAuthenticationSuccess(SamlPrincipal principal);
 
-    void onError(String message, Throwable error);
+    void logAuthenticationFailure(Exception error);
+
+    void logLogoutInitiated(SamlPrincipal principal);
+
+    void logLogoutSuccess(String sessionIndex);
 }

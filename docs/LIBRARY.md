@@ -10,7 +10,9 @@ Cette documentation synthétise les éléments clés de `SPECIFICATION.md`, `ttd
 - **security** : initialisation OpenSAML, signature/chiffrement, résolution de keystores.
 - **metadata** : parsing `EntityDescriptor` et cache TTL.
 - **util** : utilitaires XML, horodatages, compression, logs.
-- **integration** : filtres Servlet et module JASPIC + hooks d'audit/erreur.
+- **integration** : filtres Servlet et module JASPIC + hooks d'audit/erreur avec helpers (`SamlAuthenticationFilterHelper`,
+  `SamlSessionHelper`, `SessionTimeoutPolicy`, `SamlServerAuthModuleHelper`, `WildFlySecurityMappingHelper`, `JaasHelper`) pour
+  WildFly/Servlet.
 
 ## Traçabilité exigences → tests
 Les identifiants `TC-*` décrits dans `plantest.md` sont repris dans les méthodes de test pour faciliter la couverture :
@@ -30,5 +32,7 @@ Les cas de test couvrent les parcours unitaires et une orchestration end-to-end 
 1. Construire une `SamlConfiguration` via un `ConfigLoader` (YAML/JSON/etc.).
 2. Instancier `SamlServiceProvider` via `SamlServiceProviderFactory`.
 3. Utiliser `initiateAuthentication`/`processSamlResponse` pour le cycle SSO et `initiateLogout`/`processLogoutResponse` pour le SLO.
+4. Pour les applications WAR/EAR, brancher `SamlAuthenticationFilterHelper` (Servlet) ou `SamlServerAuthModuleHelper` (JASPIC)
+   afin de protéger les URLs (`protectedPaths`) et stocker le principal en session (`sessionAttributeKey`).
 
 Chaque fonctionnalité est commentée dans le code source avec les exigences (`E7`, `E8`, `E10`, etc.) pour faciliter la vérification.

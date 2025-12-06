@@ -39,17 +39,21 @@ class SamlFilterTest {
         AtomicBoolean audited = new AtomicBoolean(false);
         SamlAuditLogger auditLogger = new SamlAuditLogger() {
             @Override
-            public void onLoginSuccess(SamlPrincipal principal) {
+            public void logAuthnRequestInitiated(com.hmiso.saml.binding.BindingMessage authnRequest) { }
+
+            @Override
+            public void logAuthenticationSuccess(SamlPrincipal principal) {
                 audited.set(true);
             }
 
             @Override
-            public void onLogout(String sessionIndex) {
-            }
+            public void logAuthenticationFailure(Exception error) { }
 
             @Override
-            public void onError(String message, Throwable error) {
-            }
+            public void logLogoutInitiated(SamlPrincipal principal) { }
+
+            @Override
+            public void logLogoutSuccess(String sessionIndex) { }
         };
         SamlFilter filter = new SamlFilter(new StubFactory(provider), auditLogger, null);
 
@@ -73,7 +77,19 @@ class SamlFilterTest {
             public void processLogoutResponse(String logoutResponse, String inResponseTo) { }
         };
         AtomicBoolean handled = new AtomicBoolean(false);
-        SamlFilter filter = new SamlFilter(new StubFactory(failing), null, (msg, ex) -> handled.set(true));
+        SamlFilter filter = new SamlFilter(new StubFactory(failing), null, new SamlErrorHandler() {
+            @Override
+            public String handleValidationError(Throwable error) {
+                handled.set(true);
+                return "/error";
+            }
+
+            @Override
+            public String handleSecurityError(Throwable error) {return "/error";}
+
+            @Override
+            public String handleBindingError(Throwable error) {return "/error";}
+        });
 
         try {
             filter.onAcsResponse(failing, "", null);

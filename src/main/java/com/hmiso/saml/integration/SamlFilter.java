@@ -22,19 +22,26 @@ public class SamlFilter {
     }
 
     public BindingMessage onProtectedRequest(SamlServiceProvider provider, String relayState) {
-        return provider.initiateAuthentication(relayState);
+        BindingMessage message = provider.initiateAuthentication(relayState);
+        if (auditLogger != null) {
+            auditLogger.logAuthnRequestInitiated(message);
+        }
+        return message;
     }
 
     public SamlPrincipal onAcsResponse(SamlServiceProvider provider, String samlResponse, String relayState) {
         try {
             SamlPrincipal principal = provider.processSamlResponse(samlResponse, relayState);
             if (auditLogger != null) {
-                auditLogger.onLoginSuccess(principal);
+                auditLogger.logAuthenticationSuccess(principal);
             }
             return principal;
         } catch (Exception ex) {
+            if (auditLogger != null) {
+                auditLogger.logAuthenticationFailure(ex);
+            }
             if (errorHandler != null) {
-                errorHandler.handleError("Erreur ACS", ex);
+                errorHandler.handleValidationError(ex);
             }
             throw ex;
         }
