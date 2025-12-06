@@ -1,0 +1,64 @@
+package com.hmiso.examples.demo2;
+
+import com.hmiso.saml.DefaultSamlServiceProviderFactory;
+import com.hmiso.saml.api.SamlServiceProvider;
+import com.hmiso.saml.api.SamlServiceProviderFactory;
+import com.hmiso.saml.config.BindingType;
+import com.hmiso.saml.config.IdentityProviderConfig;
+import com.hmiso.saml.config.SamlConfiguration;
+import com.hmiso.saml.config.SecurityConfig;
+import com.hmiso.saml.config.ServiceProviderConfig;
+
+import java.net.URI;
+import java.time.Duration;
+import java.util.List;
+
+public final class SamlDemo2Configuration {
+
+    public static final String SESSION_ATTRIBUTE_KEY = "saml.principal";
+
+    private SamlDemo2Configuration() {
+    }
+
+    public static SamlConfiguration samlConfiguration() {
+        ServiceProviderConfig spConfig = new ServiceProviderConfig(
+                "saml-sp",
+                URI.create("http://localhost:8080/login/saml2/sso/acs"),
+                URI.create("http://localhost:8080/logout/saml"),
+                "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+                BindingType.HTTP_POST,
+                true,
+                List.of("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress")
+        );
+
+        IdentityProviderConfig idpConfig = new IdentityProviderConfig(
+                "saml-realm",
+                URI.create("https://localhost:8443/realms/saml-realm/protocol/saml"),
+                URI.create("https://localhost:8443/realms/saml-realm/protocol/saml"),
+                null,
+                null,
+                URI.create("https://localhost:8443/realms/saml-realm/protocol/saml/descriptor"),
+                true,
+                true,
+                List.of(BindingType.HTTP_POST, BindingType.HTTP_REDIRECT)
+        );
+
+        SecurityConfig securityConfig = new SecurityConfig(
+                Duration.ofMinutes(2),
+                "rsa-sha256",
+                "sha256",
+                null,
+                null,
+                "aes256",
+                false,
+                true
+        );
+
+        return new SamlConfiguration(spConfig, idpConfig, securityConfig);
+    }
+
+    public static SamlServiceProvider buildServiceProvider() {
+        SamlServiceProviderFactory factory = new DefaultSamlServiceProviderFactory();
+        return factory.create(samlConfiguration());
+    }
+}
