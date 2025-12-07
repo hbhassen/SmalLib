@@ -23,7 +23,7 @@ class MetadataServicesTest {
 
         assertEquals("idp", info.getEntityId());
         assertEquals(URI.create("https://idp/sso"), info.getSingleSignOnService());
-        assertEquals(BindingType.HTTP_REDIRECT, info.getSupportedBindings().getFirst());
+        assertEquals(BindingType.HTTP_REDIRECT, info.getSupportedBindings().get(0));
     }
 
     @Test

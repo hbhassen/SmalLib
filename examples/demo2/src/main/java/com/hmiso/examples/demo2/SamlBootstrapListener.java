@@ -27,12 +27,19 @@ public class SamlBootstrapListener implements ServletContextListener {
         LOGGER.info("Initialisation du contexte SAML demo2");
         RelayStateStore relayStateStore = new RelayStateManager(Duration.ofMinutes(5), Clock.systemUTC());
 
+        String contextPath = sce.getServletContext().getContextPath();
+        String basePath = (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) ? "" : contextPath;
+        String protectedApiPath = basePath + "/api/*";
+        String acsPath = basePath + "/login/saml2/sso/acs";
+        String sloPath = basePath + "/logout/saml";
+
         SamlAuthenticationFilterConfig filterConfig = SamlAuthenticationFilterConfig.builder()
-                .protectedPaths(List.of("/api/*"))
-                .acsPath("/login/saml2/sso/acs")
-                .sloPath("/logout/saml")
+                // Utilise le contextPath du WAR pour matcher /demo2/api/* lors du dploiement
+                .protectedPaths(List.of(protectedApiPath))
+                .acsPath(acsPath)
+                .sloPath(sloPath)
                 .sessionAttributeKey(SamlDemo2Configuration.SESSION_ATTRIBUTE_KEY)
-                .samlServiceProvider(SamlDemo2Configuration.buildServiceProvider())
+                .samlServiceProvider(SamlDemo2Configuration.buildServiceProvider(basePath))
                 .relayStateStore(relayStateStore)
                 .build();
 

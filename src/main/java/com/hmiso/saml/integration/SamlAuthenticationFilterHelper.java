@@ -37,11 +37,17 @@ public class SamlAuthenticationFilterHelper {
         if (!protectedRequestPredicate.test(request)) {
             return Optional.empty();
         }
-        Optional<SamlPrincipal> existing = sessionHelper.retrievePrincipalFromSession(request.getSession(false), config.getSessionAttributeKey());
+        Optional<SamlPrincipal> existing = sessionHelper.retrievePrincipalFromSession(request.getSession(false),
+                config.getSessionAttributeKey());
         if (existing.isPresent()) {
             return Optional.empty();
         }
-        BindingMessage message = config.getSamlServiceProvider().initiateAuthentication(request.getRequestURI());
+        String originalUri = request.getRequestURI();
+        // Enregistre un relay state serveur (si disponible) pour restaurer l'URL initiale après ACS
+        if (config.getRelayStateStore() != null) {
+            config.getRelayStateStore().save(originalUri, originalUri);
+        }
+        BindingMessage message = config.getSamlServiceProvider().initiateAuthentication(originalUri);
         if (auditLogger != null) {
             auditLogger.logAuthnRequestInitiated(message);
         }
@@ -54,16 +60,19 @@ public class SamlAuthenticationFilterHelper {
         try {
             SamlPrincipal principal = config.getSamlServiceProvider().processSamlResponse(samlResponse, relayState);
             sessionHelper.storePrincipalInSession(request.getSession(true), principal, config.getSessionAttributeKey());
-            String target = relayState == null ? null : config.getRelayStateStore().get(relayState);
-            if (relayState != null) {
-                config.getRelayStateStore().invalidate(relayState);
-                relayState = target;
+            String target = relayState;
+            if (relayState != null && config.getRelayStateStore() != null) {
+                String stored = config.getRelayStateStore().get(relayState);
+                if (stored != null) {
+                    target = stored;
+                    config.getRelayStateStore().invalidate(relayState);
+                }
             }
             if (auditLogger != null) {
                 auditLogger.logAuthenticationSuccess(principal);
             }
-            if (relayState != null && response != null) {
-                response.sendRedirect(relayState);
+            if (target != null && response != null) {
+                response.sendRedirect(target);
             }
             return principal;
         } catch (Exception ex) {

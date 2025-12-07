@@ -21,10 +21,16 @@ public final class SamlDemo2Configuration {
     }
 
     public static SamlConfiguration samlConfiguration() {
+        return samlConfiguration("/demo2");
+    }
+
+    public static SamlConfiguration samlConfiguration(String contextPath) {
+        String appContextPath = normalizeContextPath(contextPath);
+
         ServiceProviderConfig spConfig = new ServiceProviderConfig(
                 "saml-sp",
-                URI.create("http://localhost:8080/login/saml2/sso/acs"),
-                URI.create("http://localhost:8080/logout/saml"),
+                URI.create("http://localhost:8080" + appContextPath + "/login/saml2/sso/acs"),
+                URI.create("http://localhost:8080" + appContextPath + "/logout/saml"),
                 "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
                 BindingType.HTTP_POST,
                 true,
@@ -60,5 +66,20 @@ public final class SamlDemo2Configuration {
     public static SamlServiceProvider buildServiceProvider() {
         SamlServiceProviderFactory factory = new DefaultSamlServiceProviderFactory();
         return factory.create(samlConfiguration());
+    }
+
+    public static SamlServiceProvider buildServiceProvider(String contextPath) {
+        SamlServiceProviderFactory factory = new DefaultSamlServiceProviderFactory();
+        return factory.create(samlConfiguration(contextPath));
+    }
+
+    private static String normalizeContextPath(String contextPath) {
+        if (contextPath == null || contextPath.isBlank() || "/".equals(contextPath)) {
+            return "";
+        }
+        if (!contextPath.startsWith("/")) {
+            return "/" + contextPath;
+        }
+        return contextPath;
     }
 }
