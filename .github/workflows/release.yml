@@ -25,7 +25,9 @@ jobs:
         env:
           GPG_PRIVATE_KEY_B64: ${{ secrets.GPG_PRIVATE_KEY_B64 }}
         run: |
-          echo "$GPG_PRIVATE_KEY_B64" | base64 -d > /home/runner/key.asc
+          echo "$GPG_PRIVATE_KEY_B64" | tr -d '\r' | base64 -d > /home/runner/key.asc
+          ls -l /home/runner/key.asc
+          head -n 5 /home/runner/key.asc
           gpg --batch --import /home/runner/key.asc
           gpg --list-secret-keys --keyid-format LONG
 
