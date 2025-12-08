@@ -20,6 +20,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Debug GPG import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          printf '%s\n' "$GPG_PRIVATE_KEY" > key.asc
+          gpg --version
+          gpg --batch --import key.asc
+          gpg --list-secret-keys --keyid-format LONG
 
       - name: Import GPG from base64 secret
         env:
