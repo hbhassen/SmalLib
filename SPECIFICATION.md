@@ -59,7 +59,7 @@ Abstraire la configuration SAML en modèles Java indépendants du format ou de l
 
 
 ~~~text
-com.hmiso.saml.config
+org.hmiso.saml.config
 ├── SamlConfiguration
 │   ├── ServiceProviderConfig (SP)
 │   │   ├─ entityId: String
@@ -169,7 +169,7 @@ Gérer la logique SAML métier : création AuthnRequest, parsing/validation SAML
 
 
 ~~~text
-com.hmiso.saml.saml
+org.hmiso.saml.saml
 ├── SamlServiceProvider (Interface)
 │   ├─ buildAuthnRequest(SamlAuthnRequestParameters)
 │   │   ↓ returns SamlAuthnRequest
@@ -308,7 +308,7 @@ Encoder/décoder les messages SAML selon les bindings HTTP-Redirect et HTTP-POST
 
 
 ~~~text
-com.hmiso.saml.binding
+org.hmiso.saml.binding
 ├── BindingType (Enum)
 │   ├─ HTTP_REDIRECT
 │   └─ HTTP_POST
@@ -397,7 +397,7 @@ Initialiser OpenSAML, valider signatures XML, gérer keystores/truststores, cloc
 
 
 ~~~text
-com.hmiso.saml.security
+org.hmiso.saml.security
 ├── SamlSecurityInitializer (Singleton)
 │   ├─ getInstance(): SamlSecurityInitializer
 │   ├─ initialize(): void
@@ -486,7 +486,7 @@ Récupérer automatiquement la configuration IdP depuis le metadata XML SAML 2.0
 Code :
 
 ~~~text
-com.hmiso.saml.metadata
+org.hmiso.saml.metadata
 ├── SamlMetadataLoader (Interface)
 │   ├─ load(metadataUrl): EntityDescriptor
 │   └─ load(metadataXmlString): EntityDescriptor
@@ -545,7 +545,7 @@ Faciliter l'intégration avec une application WAR/EAR sur WildFly, notamment pou
 Code :
 
 ~~~text
-com.hmiso.saml.integration
+org.hmiso.saml.integration
 ├── Servlet Filter Utilities
 │   ├─ SamlAuthenticationFilterConfig (Builder)
 │   │   ├─ protectedPaths: List<String> (ex: /secure/*)
@@ -681,7 +681,7 @@ Fournir des utilitaires pour XML parsing, compression, horodatage, génération 
 ### 📁 Structure logique
 
 ~~~text
-com.hmiso.saml.util
+org.hmiso.saml.util
 ├── XmlUtility
 │   ├─ prettyPrint(Element): String (pour debug)
 │   ├─ serialize(XMLObject): String (compact)

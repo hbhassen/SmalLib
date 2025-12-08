@@ -6,8 +6,8 @@ Ce guide explique comment utiliser la librairie SAML SmalLib dans un projet Jaka
 Ajoutez la librairie dans votre `pom.xml` :
 ```xml
 <dependency>
-  <groupId>com.hmiso</groupId>
-  <artifactId>smalib</artifactId>
+  <groupId>org.hmiso</groupId>
+  <artifactId>smalsamlLib</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -45,11 +45,11 @@ public class MySamlConfigProvider implements SamlConfigProvider {
   }
 }
 ```
-2. **Declarer le provider** : fichier `src/main/resources/META-INF/services/com.hmiso.saml.integration.jakarta.SamlConfigProvider` contenant :
+2. **Declarer le provider** : fichier `src/main/resources/META-INF/services/org.hmiso.saml.integration.jakarta.SamlConfigProvider` contenant :
 ```
 com.example.MySamlConfigProvider
 ```
-3. **Deployer** : le listener `com.hmiso.saml.integration.jakarta.SamlBootstrapListener` et le filtre `com.hmiso.saml.integration.jakarta.SamlJakartaFilter` (annoté `@WebFilter`) sont dans la librairie ; aucun filtre/listener custom n est requis dans le WAR, seule la config via le provider.
+3. **Deployer** : le listener `org.hmiso.saml.integration.jakarta.SamlBootstrapListener` et le filtre `org.hmiso.saml.integration.jakarta.SamlJakartaFilter` (annoté `@WebFilter`) sont dans la librairie ; aucun filtre/listener custom n est requis dans le WAR, seule la config via le provider.
 
 ### Points d attention
 - Adapter `entityId`, ACS/SLO, et URLs IdP (SSO/SLO) a votre contexte (`http://host:port/<context>/...`).
@@ -96,7 +96,7 @@ public FilterRegistrationBean<SamlJakartaFilter> samlFilter() {
 
 ## 6) Debug / verification
 - Decoder l AuthnRequest (Base64) pour verifier `Destination`, `AssertionConsumerServiceURL`, `Issuer`, `ProtocolBinding`.
-- Activer les logs DEBUG pour `com.hmiso.saml` pour tracer le flux (AuthnRequest, ACS, SLO).
+- Activer les logs DEBUG pour `org.hmiso.saml` pour tracer le flux (AuthnRequest, ACS, SLO).
 - Sur l IdP (Keycloak), autoriser les redirect URIs correspondant a l ACS (`http(s)://host:port/context/login/saml2/sso/*`).
 
 Ce guide couvre l integration standard Servlet/Jakarta (WildFly) et Spring Boot embarque. Adaptez les URLs et la politique TLS a votre environnement.
