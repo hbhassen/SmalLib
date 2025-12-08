@@ -4,7 +4,7 @@ import org.hmiso.saml.api.SamlPrincipal;
 import org.hmiso.saml.binding.BindingMessage;
 
 /**
- * Interface d'audit pour les événements SAML majeurs (VII - Logging & Audit).
+ * Interface d'audit pour les evenements SAML majeurs (VII - Logging & Audit).
  */
 public interface SamlAuditLogger {
     void logAuthnRequestInitiated(BindingMessage authnRequest);
