@@ -2,7 +2,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.hmiso.examples</groupId>
+    <groupId>org.hmiso.examples</groupId>
     <artifactId>demo2</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>war</packaging>
@@ -13,16 +13,16 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <smalib.version>0.1.0-SNAPSHOT</smalib.version>
+        <smalsamlLib.version>0.1.0-SNAPSHOT</smalsamlLib.version>
         <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.hmiso</groupId>
-            <artifactId>smalib</artifactId>
-            <version>${smalib.version}</version>
+            <groupId>org.hmiso</groupId>
+            <artifactId>smalsamlLib</artifactId>
+            <version>${smalsamlLib.version}</version>
         </dependency>
 
         <dependency>
