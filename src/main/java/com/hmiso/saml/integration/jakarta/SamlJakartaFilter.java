@@ -1,9 +1,10 @@
-package com.hmiso.examples.demo2;
+package com.hmiso.saml.integration.jakarta;
 
 import com.hmiso.saml.binding.BindingMessage;
 import com.hmiso.saml.config.BindingType;
 import com.hmiso.saml.integration.SamlAuthenticationFilterConfig;
 import com.hmiso.saml.integration.SamlAuthenticationFilterHelper;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -19,15 +20,18 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+/**
+ * Filtre Jakarta generique fourni par SmalLib, responsable du transport (Redirect/POST) vers l'IdP.
+ */
 @WebFilter("/*")
 public class SamlJakartaFilter implements Filter {
 
-    static final String CONFIG_KEY = "demo2.saml.config";
-    static final String HELPER_KEY = "demo2.saml.helper";
+    public static final String CONFIG_KEY = "smalib.saml.config";
+    public static final String HELPER_KEY = "smalib.saml.helper";
 
     @Override
     public void init(FilterConfig filterConfig) {
-        // Pas d'initialisation spécifique : la configuration est fournie par SamlBootstrapListener
+        // No-op
     }
 
     @Override
