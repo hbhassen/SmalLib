@@ -23,6 +23,7 @@
             <groupId>com.hmiso</groupId>
             <artifactId>smalib</artifactId>
             <version>${smalib.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

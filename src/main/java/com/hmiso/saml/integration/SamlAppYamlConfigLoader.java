@@ -172,11 +172,31 @@ public final class SamlAppYamlConfigLoader {
         if (configuredPath != null && !configuredPath.isBlank()) {
             return Files.newInputStream(Path.of(configuredPath));
         }
-        InputStream input = SamlAppYamlConfigLoader.class.getResourceAsStream(DEFAULT_RESOURCE);
+        InputStream input = openFromContextClassLoader();
+        if (input != null) {
+            return input;
+        }
+        input = SamlAppYamlConfigLoader.class.getResourceAsStream(DEFAULT_RESOURCE);
         if (input == null) {
             throw new IllegalStateException("Missing " + DEFAULT_RESOURCE + " on the classpath");
         }
         return input;
+    }
+
+    private InputStream openFromContextClassLoader() {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {
+            return null;
+        }
+        String resourceName = DEFAULT_RESOURCE.startsWith("/") ? DEFAULT_RESOURCE.substring(1) : DEFAULT_RESOURCE;
+        InputStream input = loader.getResourceAsStream(resourceName);
+        if (input != null) {
+            return input;
+        }
+        if (!resourceName.equals(DEFAULT_RESOURCE)) {
+            return loader.getResourceAsStream(DEFAULT_RESOURCE);
+        }
+        return null;
     }
 
     private static String normalizeContextPath(String contextPath) {

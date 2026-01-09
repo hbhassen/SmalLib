@@ -82,6 +82,15 @@ Cette application `demo2` illustre l'utilisation de la librairie **SmalLib** dan
 La configuration SAML est chargee depuis `src/main/resources/saml-config.yml`.
 Pour utiliser un fichier externe, definir la propriete systeme `saml.config.path` (ou la variable d'environnement `SAML_CONFIG_PATH`) vers un chemin de fichier.
 
+## Module WildFly (SmalLib en provided)
+L'exemple `demo2` reference maintenant SmalLib avec un scope `provided` et declare le module WildFly `com.hmiso.smalib`
+dans `WEB-INF/jboss-deployment-structure.xml`.
+Etapes (adapter si besoin) :
+- Copier `target/smalib-0.1.0-SNAPSHOT.jar` et `snakeyaml-2.2.jar` dans
+  `C:\Users\hamdi\Desktop\POC\wildfly-31.0.1.Final\modules\com\hmiso\smalib\main`.
+- Creer `module.xml` dans ce meme dossier avec les resource-root et les dependances `jakarta.servlet.api`, `org.slf4j`
+  et `java.desktop` (necessaire pour SnakeYAML).
+
 ## Construction et déploiement
 1. Installer la librairie SmalLib dans votre repository Maven local (à la racine du dépôt) :
    ```bash
