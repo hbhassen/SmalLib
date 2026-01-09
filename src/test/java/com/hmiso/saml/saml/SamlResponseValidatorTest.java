@@ -19,13 +19,19 @@ class SamlResponseValidatorTest {
         SamlResponseValidator validator = new SamlResponseValidator(configuration);
 
         Instant now = Instant.now();
-        assertDoesNotThrow(() -> validator.validate(
+        SamlResponseValidationContext context = new SamlResponseValidationContext(
                 configuration.getServiceProvider().getEntityId(),
                 configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
                 "REQ-123",
+                "REQ-123",
                 now.minusSeconds(5),
-                now.plusSeconds(5))
+                now.plusSeconds(5),
+                configuration.getIdentityProvider().getEntityId(),
+                configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
+                true,
+                true
         );
+        assertDoesNotThrow(() -> validator.validate(context));
     }
 
     @Test
@@ -35,20 +41,32 @@ class SamlResponseValidatorTest {
 
         Instant now = Instant.parse("2024-01-01T00:00:00Z");
 
-        assertThrows(SamlException.class, () -> validator.validate(
+        SamlResponseValidationContext badAudience = new SamlResponseValidationContext(
                 "other-entity",
                 configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
                 "REQ-123",
+                "REQ-123",
                 now.minusSeconds(30),
-                now.plusSeconds(30))
+                now.plusSeconds(30),
+                configuration.getIdentityProvider().getEntityId(),
+                configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
+                true,
+                true
         );
+        assertThrows(SamlException.class, () -> validator.validate(badAudience));
 
-        assertThrows(SamlException.class, () -> validator.validate(
+        SamlResponseValidationContext expired = new SamlResponseValidationContext(
                 configuration.getServiceProvider().getEntityId(),
                 configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
                 "REQ-123",
+                "REQ-123",
                 now.minusSeconds(300),
-                now.minusSeconds(200))
+                now.minusSeconds(200),
+                configuration.getIdentityProvider().getEntityId(),
+                configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString(),
+                true,
+                true
         );
+        assertThrows(SamlException.class, () -> validator.validate(expired));
     }
 }

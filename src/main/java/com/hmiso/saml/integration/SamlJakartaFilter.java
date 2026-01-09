@@ -61,6 +61,9 @@ public class SamlJakartaFilter implements Filter {
             return;
         }
 
+        if (!helper.validateJwtFromRequest(httpRequest, httpResponse)) {
+            return;
+        }
         Optional<BindingMessage> redirect = helper.shouldRedirectToIdP(httpRequest, httpResponse);
         if (redirect.isPresent()) {
             BindingMessage message = redirect.get();
@@ -77,6 +80,7 @@ public class SamlJakartaFilter implements Filter {
         }
 
         chain.doFilter(request, response);
+        helper.attachJwtHeader(httpRequest, httpResponse);
     }
 
     @Override

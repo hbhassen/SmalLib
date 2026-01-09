@@ -18,6 +18,11 @@ public final class SamlAuthenticationFilterConfig {
     private final String sloPath;
     private final SamlServiceProvider samlServiceProvider;
     private final String sessionAttributeKey;
+    private final SamlServerSessionRegistry serverSessionRegistry;
+    private final String serverSessionAttributeKey;
+    private final java.time.Duration sessionMaxTtl;
+    private final SamlJwtService jwtService;
+    private final java.time.Duration jwtTtl;
     private final RelayStateStore relayStateStore;
 
     private SamlAuthenticationFilterConfig(Builder builder) {
@@ -26,6 +31,11 @@ public final class SamlAuthenticationFilterConfig {
         this.sloPath = builder.sloPath;
         this.samlServiceProvider = builder.samlServiceProvider;
         this.sessionAttributeKey = builder.sessionAttributeKey;
+        this.serverSessionRegistry = builder.serverSessionRegistry;
+        this.serverSessionAttributeKey = builder.serverSessionAttributeKey;
+        this.sessionMaxTtl = builder.sessionMaxTtl;
+        this.jwtService = builder.jwtService;
+        this.jwtTtl = builder.jwtTtl;
         this.relayStateStore = builder.relayStateStore;
     }
 
@@ -49,6 +59,26 @@ public final class SamlAuthenticationFilterConfig {
         return sessionAttributeKey;
     }
 
+    public SamlServerSessionRegistry getServerSessionRegistry() {
+        return serverSessionRegistry;
+    }
+
+    public String getServerSessionAttributeKey() {
+        return serverSessionAttributeKey;
+    }
+
+    public java.time.Duration getSessionMaxTtl() {
+        return sessionMaxTtl;
+    }
+
+    public SamlJwtService getJwtService() {
+        return jwtService;
+    }
+
+    public java.time.Duration getJwtTtl() {
+        return jwtTtl;
+    }
+
     public RelayStateStore getRelayStateStore() {
         return relayStateStore;
     }
@@ -66,6 +96,11 @@ public final class SamlAuthenticationFilterConfig {
         private String sloPath;
         private SamlServiceProvider samlServiceProvider;
         private String sessionAttributeKey = "saml.principal";
+        private SamlServerSessionRegistry serverSessionRegistry;
+        private String serverSessionAttributeKey = SamlAppConfiguration.DEFAULT_SERVER_SESSION_ATTRIBUTE_KEY;
+        private java.time.Duration sessionMaxTtl = SamlAppConfiguration.DEFAULT_SESSION_MAX_TTL;
+        private SamlJwtService jwtService;
+        private java.time.Duration jwtTtl = SamlAppConfiguration.DEFAULT_JWT_TTL;
         private RelayStateStore relayStateStore;
 
         private Builder() {
@@ -101,6 +136,31 @@ public final class SamlAuthenticationFilterConfig {
 
         public Builder sessionAttributeKey(String key) {
             this.sessionAttributeKey = Objects.requireNonNull(key, "sessionAttributeKey");
+            return this;
+        }
+
+        public Builder serverSessionRegistry(SamlServerSessionRegistry registry) {
+            this.serverSessionRegistry = registry;
+            return this;
+        }
+
+        public Builder serverSessionAttributeKey(String key) {
+            this.serverSessionAttributeKey = Objects.requireNonNull(key, "serverSessionAttributeKey");
+            return this;
+        }
+
+        public Builder sessionMaxTtl(java.time.Duration ttl) {
+            this.sessionMaxTtl = Objects.requireNonNull(ttl, "sessionMaxTtl");
+            return this;
+        }
+
+        public Builder jwtService(SamlJwtService jwtService) {
+            this.jwtService = jwtService;
+            return this;
+        }
+
+        public Builder jwtTtl(java.time.Duration ttl) {
+            this.jwtTtl = Objects.requireNonNull(ttl, "jwtTtl");
             return this;
         }
 

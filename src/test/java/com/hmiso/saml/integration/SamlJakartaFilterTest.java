@@ -105,11 +105,15 @@ class SamlJakartaFilterTest {
         SamlAppConfiguration appConfig = new SamlAppConfiguration(
                 TestConfigurations.minimalConfig(BindingType.HTTP_POST),
                 "saml.principal",
+                SamlAppConfiguration.DEFAULT_SERVER_SESSION_ATTRIBUTE_KEY,
+                SamlAppConfiguration.DEFAULT_SESSION_MAX_TTL,
                 java.util.List.of("/secure/*"),
                 "/acs",
                 "/slo",
                 Duration.ofMinutes(5),
-                "/saml/error"
+                "/saml/error",
+                SamlAppConfiguration.DEFAULT_JWT_TTL,
+                "secret"
         );
         Map<String, Object> attributes = new HashMap<>();
         attributes.put(SamlAppConfiguration.FILTER_CONFIG_CONTEXT_KEY, config);
@@ -155,6 +159,7 @@ class SamlJakartaFilterTest {
         when(request.getServletContext()).thenReturn(context);
         when(request.getRequestURI()).thenReturn("/secure");
         when(request.getMethod()).thenReturn("GET");
+        when(helper.validateJwtFromRequest(request, response)).thenReturn(true);
         when(context.getAttribute(anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
 
         filter.doFilter(request, response, chain);
@@ -190,6 +195,7 @@ class SamlJakartaFilterTest {
         when(request.getServletContext()).thenReturn(context);
         when(request.getRequestURI()).thenReturn("/secure");
         when(request.getMethod()).thenReturn("GET");
+        when(helper.validateJwtFromRequest(request, response)).thenReturn(true);
         when(context.getAttribute(anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
 
         StringWriter writer = new StringWriter();

@@ -109,7 +109,7 @@ class SamlIntegrationHelpersTest {
         }).when(session).setAttribute(anyString(), any());
         var request = mock(jakarta.servlet.http.HttpServletRequest.class);
         when(request.getRequestURI()).thenReturn("/saml/acs");
-        when(request.getParameter("SAMLResponse")).thenReturn("user@example.com");
+        when(request.getParameter("SAMLResponse")).thenReturn(buildResponse(configuration, "REQ-123", "user@example.com"));
         when(request.getParameter("RelayState")).thenReturn(relayState);
         when(request.getSession(true)).thenReturn(session);
         var response = mock(jakarta.servlet.http.HttpServletResponse.class);
@@ -220,5 +220,39 @@ class SamlIntegrationHelpersTest {
         SamlPrincipal principal = new SamlPrincipal("alice", null, "idx", Map.of());
         JaasHelper helper = new JaasHelper(new SamlServerAuthModuleHelper(), () -> null);
         assertDoesNotThrow(() -> helper.createLoginContext(principal, "test"));
+    }
+
+    private String buildResponse(SamlConfiguration configuration, String inResponseTo, String nameId) {
+        String recipient = configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString();
+        String issuer = configuration.getIdentityProvider().getEntityId();
+        String audience = configuration.getServiceProvider().getEntityId();
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant notOnOrAfter = now.plusSeconds(30);
+        return """
+                <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+                                xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+                                xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                                ID="R1" InResponseTo="%s" Destination="%s">
+                  <saml:Issuer>%s</saml:Issuer>
+                  <ds:Signature>sig</ds:Signature>
+                  <saml:Assertion ID="A1">
+                    <saml:Issuer>%s</saml:Issuer>
+                    <ds:Signature>sig</ds:Signature>
+                    <saml:Subject>
+                      <saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">%s</saml:NameID>
+                      <saml:SubjectConfirmation>
+                        <saml:SubjectConfirmationData Recipient="%s" NotOnOrAfter="%s" />
+                      </saml:SubjectConfirmation>
+                    </saml:Subject>
+                    <saml:Conditions NotBefore="%s" NotOnOrAfter="%s">
+                      <saml:AudienceRestriction>
+                        <saml:Audience>%s</saml:Audience>
+                      </saml:AudienceRestriction>
+                    </saml:Conditions>
+                    <saml:AuthnStatement SessionIndex="sess-1" />
+                  </saml:Assertion>
+                </samlp:Response>
+                """.formatted(inResponseTo, recipient, issuer, issuer, nameId, recipient, notOnOrAfter,
+                now, notOnOrAfter, audience);
     }
 }

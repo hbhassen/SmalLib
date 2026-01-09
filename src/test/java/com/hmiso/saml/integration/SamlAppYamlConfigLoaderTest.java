@@ -19,6 +19,8 @@ class SamlAppYamlConfigLoaderTest {
             + "  protected-paths:\n"
             + "    - \"/api/*\"\n"
             + "  session-attribute-key: \"saml.principal\"\n"
+            + "  server-session-attribute-key: \"saml.server.session\"\n"
+            + "  session-max-minutes: 45\n"
             + "  error-path: \"/saml/error\"\n"
             + "  relay-state-ttl-minutes: 15\n"
             + "\n"
@@ -50,7 +52,9 @@ class SamlAppYamlConfigLoaderTest {
             + "  digest-algorithm: \"sha256\"\n"
             + "  encryption-algorithm: \"aes256\"\n"
             + "  force-https-redirect: false\n"
-            + "  enable-detailed-logging: true\n";
+            + "  enable-detailed-logging: true\n"
+            + "  jwt-ttl-seconds: 12\n"
+            + "  jwt-secret: \"unit-test-secret\"\n";
 
     private static final String MISSING_PROTECTED_PATHS_YAML = ""
             + "app:\n"
@@ -92,6 +96,10 @@ class SamlAppYamlConfigLoaderTest {
             assertEquals("/demo2/api/*", config.getProtectedPaths().get(0));
             assertEquals("/demo2/saml/error", config.getErrorPath());
             assertEquals(Duration.ofMinutes(15), config.getRelayStateTtl());
+            assertEquals("saml.server.session", config.getServerSessionAttributeKey());
+            assertEquals(Duration.ofMinutes(45), config.getSessionMaxTtl());
+            assertEquals(Duration.ofSeconds(12), config.getJwtTtl());
+            assertEquals("unit-test-secret", config.getJwtSecret());
 
             SamlConfiguration saml = config.getSamlConfiguration();
             assertEquals("http://localhost:8080/demo2/login/saml2/sso/acs",

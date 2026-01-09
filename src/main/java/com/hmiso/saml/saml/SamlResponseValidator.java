@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * Validateur minimal appliquant la checklist sécurité de SPECIFICATION.md.
+ * Validateur minimal appliquant la checklist securite de SPECIFICATION.md.
  */
 public class SamlResponseValidator {
     private final SamlConfiguration configuration;
@@ -18,21 +18,67 @@ public class SamlResponseValidator {
         this.configuration = Objects.requireNonNull(configuration, "configuration");
     }
 
-    public void validate(String audience, String recipient, String inResponseTo, Instant notBefore, Instant notOnOrAfter) {
-        // E8 / TC-SAML-02 : vérifier audience, Recipient, InResponseTo et fenêtre temporelle avec clockSkew.
-        if (!configuration.getServiceProvider().getEntityId().equals(audience)) {
+    public void validate(SamlResponseValidationContext context) {
+        // E8 / TC-SAML-02 : verifier audience, Destination, InResponseTo et fenetre temporelle.
+        if (context.getAudience() == null
+                || !configuration.getServiceProvider().getEntityId().equals(context.getAudience())) {
             throw new SamlException("AudienceRestriction invalide");
         }
-        if (!configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString().equals(recipient)) {
+        String expectedRecipient = configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString();
+        if (context.getDestination() == null || !expectedRecipient.equals(context.getDestination())) {
+            throw new SamlException("Destination invalide");
+        }
+        if (context.getRecipient() != null && !expectedRecipient.equals(context.getRecipient())) {
             throw new SamlException("Recipient inattendu");
         }
-        if (inResponseTo == null || inResponseTo.isBlank()) {
+        if (context.getInResponseTo() == null || context.getInResponseTo().isBlank()) {
             throw new SamlException("InResponseTo manquant");
+        }
+        if (context.getExpectedInResponseTo() != null
+                && !context.getExpectedInResponseTo().equals(context.getInResponseTo())) {
+            throw new SamlException("InResponseTo invalide");
+        }
+        if (!issuerMatches(configuration.getIdentityProvider().getEntityId(), context.getIssuer())) {
+            throw new SamlException("Issuer inattendu");
+        }
+        if (context.getNotBefore() == null || context.getNotOnOrAfter() == null) {
+            throw new SamlException("Conditions manquantes");
         }
         Duration skew = configuration.getSecurity().getClockSkewDuration();
         Instant now = Instant.now();
-        if (!TimeUtils.isWithinClockSkew(now, notBefore, notOnOrAfter, skew)) {
-            throw new SamlException("Horodatage en dehors de la fenêtre autorisée");
+        if (!TimeUtils.isWithinClockSkew(now, context.getNotBefore(), context.getNotOnOrAfter(), skew)) {
+            throw new SamlException("Horodatage en dehors de la fenetre autorisee");
         }
+
+        boolean requireResponseSignature = configuration.getIdentityProvider().isWantMessagesSigned();
+        boolean requireAssertionSignature = configuration.getIdentityProvider().isWantAssertionsSigned();
+        if (requireResponseSignature && requireAssertionSignature) {
+            if (!(context.isResponseSigned() || context.isAssertionSigned())) {
+                throw new SamlException("Signature manquante");
+            }
+        } else {
+            if (requireResponseSignature && !context.isResponseSigned()) {
+                throw new SamlException("Signature response manquante");
+            }
+            if (requireAssertionSignature && !context.isAssertionSigned()) {
+                throw new SamlException("Signature assertion manquante");
+            }
+        }
+    }
+
+    private boolean issuerMatches(String expected, String actual) {
+        if (expected == null || expected.isBlank()) {
+            return false;
+        }
+        if (actual == null || actual.isBlank()) {
+            return false;
+        }
+        if (expected.equals(actual)) {
+            return true;
+        }
+        if (!expected.contains("://") && actual.endsWith("/" + expected)) {
+            return true;
+        }
+        return false;
     }
 }

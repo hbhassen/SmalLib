@@ -11,8 +11,11 @@ import java.util.Objects;
  */
 public final class SamlAppConfiguration {
     public static final String DEFAULT_SESSION_ATTRIBUTE_KEY = "saml.principal";
+    public static final String DEFAULT_SERVER_SESSION_ATTRIBUTE_KEY = "saml.server.session";
     public static final String DEFAULT_ERROR_PATH = "/saml/error";
     public static final Duration DEFAULT_RELAY_STATE_TTL = Duration.ofMinutes(5);
+    public static final Duration DEFAULT_SESSION_MAX_TTL = Duration.ofMinutes(60);
+    public static final Duration DEFAULT_JWT_TTL = Duration.ofSeconds(10);
 
     public static final String CONFIG_CONTEXT_KEY = "smalib.saml.app.config";
     public static final String FILTER_CONFIG_CONTEXT_KEY = "smalib.saml.filter.config";
@@ -20,26 +23,38 @@ public final class SamlAppConfiguration {
 
     private final SamlConfiguration samlConfiguration;
     private final String sessionAttributeKey;
+    private final String serverSessionAttributeKey;
+    private final Duration sessionMaxTtl;
     private final List<String> protectedPaths;
     private final String acsPath;
     private final String sloPath;
     private final Duration relayStateTtl;
     private final String errorPath;
+    private final Duration jwtTtl;
+    private final String jwtSecret;
 
     public SamlAppConfiguration(SamlConfiguration samlConfiguration,
                                 String sessionAttributeKey,
+                                String serverSessionAttributeKey,
+                                Duration sessionMaxTtl,
                                 List<String> protectedPaths,
                                 String acsPath,
                                 String sloPath,
                                 Duration relayStateTtl,
-                                String errorPath) {
+                                String errorPath,
+                                Duration jwtTtl,
+                                String jwtSecret) {
         this.samlConfiguration = Objects.requireNonNull(samlConfiguration, "samlConfiguration");
         this.sessionAttributeKey = Objects.requireNonNull(sessionAttributeKey, "sessionAttributeKey");
+        this.serverSessionAttributeKey = Objects.requireNonNull(serverSessionAttributeKey, "serverSessionAttributeKey");
+        this.sessionMaxTtl = Objects.requireNonNull(sessionMaxTtl, "sessionMaxTtl");
         this.protectedPaths = List.copyOf(Objects.requireNonNull(protectedPaths, "protectedPaths"));
         this.acsPath = Objects.requireNonNull(acsPath, "acsPath");
         this.sloPath = Objects.requireNonNull(sloPath, "sloPath");
         this.relayStateTtl = Objects.requireNonNull(relayStateTtl, "relayStateTtl");
         this.errorPath = Objects.requireNonNull(errorPath, "errorPath");
+        this.jwtTtl = Objects.requireNonNull(jwtTtl, "jwtTtl");
+        this.jwtSecret = jwtSecret;
     }
 
     public SamlConfiguration getSamlConfiguration() {
@@ -48,6 +63,14 @@ public final class SamlAppConfiguration {
 
     public String getSessionAttributeKey() {
         return sessionAttributeKey;
+    }
+
+    public String getServerSessionAttributeKey() {
+        return serverSessionAttributeKey;
+    }
+
+    public Duration getSessionMaxTtl() {
+        return sessionMaxTtl;
     }
 
     public List<String> getProtectedPaths() {
@@ -68,5 +91,13 @@ public final class SamlAppConfiguration {
 
     public String getErrorPath() {
         return errorPath;
+    }
+
+    public Duration getJwtTtl() {
+        return jwtTtl;
+    }
+
+    public String getJwtSecret() {
+        return jwtSecret;
     }
 }

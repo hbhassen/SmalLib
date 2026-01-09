@@ -2,6 +2,8 @@ app:
   protected-paths:
     - "/api/*"
   session-attribute-key: "saml.principal"
+  server-session-attribute-key: "saml.server.session"
+  session-max-minutes: 60
   error-path: "/saml/error"
   relay-state-ttl-minutes: 5
 
@@ -34,3 +36,5 @@ security:
   encryption-algorithm: "aes256"
   force-https-redirect: false
   enable-detailed-logging: true
+  jwt-secret: "change-me-demo2"
+  jwt-ttl-seconds: 10

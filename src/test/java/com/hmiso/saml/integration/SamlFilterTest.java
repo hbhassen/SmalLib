@@ -35,7 +35,8 @@ class SamlFilterTest {
 
     @Test
     void shouldAuditSuccessAndPropagatePrincipal_TC_INT_03() {
-        DefaultSamlServiceProvider provider = new DefaultSamlServiceProvider(TestConfigurations.minimalConfig(BindingType.HTTP_REDIRECT));
+        var configuration = TestConfigurations.minimalConfig(BindingType.HTTP_REDIRECT);
+        DefaultSamlServiceProvider provider = new DefaultSamlServiceProvider(configuration);
         AtomicBoolean audited = new AtomicBoolean(false);
         SamlAuditLogger auditLogger = new SamlAuditLogger() {
             @Override
@@ -57,7 +58,8 @@ class SamlFilterTest {
         };
         SamlFilter filter = new SamlFilter(new StubFactory(provider), auditLogger, null);
 
-        SamlPrincipal principal = filter.onAcsResponse(provider, "user@example.com", null);
+        String samlResponse = buildResponse(configuration, "REQ-123", "user@example.com");
+        SamlPrincipal principal = filter.onAcsResponse(provider, samlResponse, null);
 
         assertEquals("user@example.com", principal.getNameId());
         assertTrue(audited.get());
@@ -98,5 +100,39 @@ class SamlFilterTest {
         }
 
         assertTrue(handled.get());
+    }
+
+    private String buildResponse(com.hmiso.saml.config.SamlConfiguration configuration, String inResponseTo, String nameId) {
+        String recipient = configuration.getServiceProvider().getAssertionConsumerServiceUrl().toString();
+        String issuer = configuration.getIdentityProvider().getEntityId();
+        String audience = configuration.getServiceProvider().getEntityId();
+        java.time.Instant now = java.time.Instant.now();
+        java.time.Instant notOnOrAfter = now.plusSeconds(30);
+        return """
+                <samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+                                xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+                                xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                                ID="R1" InResponseTo="%s" Destination="%s">
+                  <saml:Issuer>%s</saml:Issuer>
+                  <ds:Signature>sig</ds:Signature>
+                  <saml:Assertion ID="A1">
+                    <saml:Issuer>%s</saml:Issuer>
+                    <ds:Signature>sig</ds:Signature>
+                    <saml:Subject>
+                      <saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">%s</saml:NameID>
+                      <saml:SubjectConfirmation>
+                        <saml:SubjectConfirmationData Recipient="%s" NotOnOrAfter="%s" />
+                      </saml:SubjectConfirmation>
+                    </saml:Subject>
+                    <saml:Conditions NotBefore="%s" NotOnOrAfter="%s">
+                      <saml:AudienceRestriction>
+                        <saml:Audience>%s</saml:Audience>
+                      </saml:AudienceRestriction>
+                    </saml:Conditions>
+                    <saml:AuthnStatement SessionIndex="sess-1" />
+                  </saml:Assertion>
+                </samlp:Response>
+                """.formatted(inResponseTo, recipient, issuer, issuer, nameId, recipient, notOnOrAfter,
+                now, notOnOrAfter, audience);
     }
 }

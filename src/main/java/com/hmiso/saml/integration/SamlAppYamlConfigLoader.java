@@ -106,6 +106,11 @@ public final class SamlAppYamlConfigLoader {
         if (sessionAttributeKey == null) {
             sessionAttributeKey = SamlAppConfiguration.DEFAULT_SESSION_ATTRIBUTE_KEY;
         }
+        String serverSessionAttributeKey = optionalString(app, "server-session-attribute-key");
+        if (serverSessionAttributeKey == null) {
+            serverSessionAttributeKey = SamlAppConfiguration.DEFAULT_SERVER_SESSION_ATTRIBUTE_KEY;
+        }
+        Duration sessionMaxTtl = parseSessionMaxTtl(app);
         String errorPath = optionalString(app, "error-path");
         if (errorPath == null) {
             errorPath = SamlAppConfiguration.DEFAULT_ERROR_PATH;
@@ -120,15 +125,21 @@ public final class SamlAppYamlConfigLoader {
             normalizedProtectedPaths.add(prefixContextPath(normalizedContextPath, path));
         }
         Duration relayStateTtl = parseRelayStateTtl(app);
+        Duration jwtTtl = parseJwtTtl(security);
+        String jwtSecret = optionalString(security, "jwt-secret");
 
         return new SamlAppConfiguration(
                 samlConfiguration,
                 sessionAttributeKey,
+                serverSessionAttributeKey,
+                sessionMaxTtl,
                 normalizedProtectedPaths,
                 prefixContextPath(normalizedContextPath, acsPath),
                 prefixContextPath(normalizedContextPath, sloPath),
                 relayStateTtl,
-                errorPath
+                errorPath,
+                jwtTtl,
+                jwtSecret
         );
     }
 
@@ -148,6 +159,44 @@ public final class SamlAppYamlConfigLoader {
             return Duration.ofMinutes(Long.parseLong(text));
         } catch (NumberFormatException ex) {
             throw new IllegalStateException("Invalid relay-state-ttl-minutes", ex);
+        }
+    }
+
+    private Duration parseSessionMaxTtl(Map<String, Object> app) {
+        Object value = app.get("session-max-minutes");
+        if (value == null) {
+            return SamlAppConfiguration.DEFAULT_SESSION_MAX_TTL;
+        }
+        if (value instanceof Number) {
+            return Duration.ofMinutes(((Number) value).longValue());
+        }
+        String text = value.toString().trim();
+        if (text.isEmpty()) {
+            return SamlAppConfiguration.DEFAULT_SESSION_MAX_TTL;
+        }
+        try {
+            return Duration.ofMinutes(Long.parseLong(text));
+        } catch (NumberFormatException ex) {
+            throw new IllegalStateException("Invalid session-max-minutes", ex);
+        }
+    }
+
+    private Duration parseJwtTtl(Map<String, Object> security) {
+        Object value = security.get("jwt-ttl-seconds");
+        if (value == null) {
+            return SamlAppConfiguration.DEFAULT_JWT_TTL;
+        }
+        if (value instanceof Number) {
+            return Duration.ofSeconds(((Number) value).longValue());
+        }
+        String text = value.toString().trim();
+        if (text.isEmpty()) {
+            return SamlAppConfiguration.DEFAULT_JWT_TTL;
+        }
+        try {
+            return Duration.ofSeconds(Long.parseLong(text));
+        } catch (NumberFormatException ex) {
+            throw new IllegalStateException("Invalid jwt-ttl-seconds", ex);
         }
     }
 
