@@ -71,9 +71,10 @@ Cette application `demo2` illustre l'utilisation de la librairie **SmalLib** dan
 
 ## Architecture
 - `SamlBootstrapListener` et `SamlJakartaFilter` sont fournis par SmalLib et se configurent via `saml-config.yml`.
+- `WEB-INF/web.xml` declare le listener, le filtre SAML, le servlet d'erreur et le servlet JAX-RS pour `/api/*`.
 - Le listener charge la configuration SAML (SP + IdP) et prepare le `SamlAuthenticationFilterHelper`.
 - Le filtre protege les chemins, gere l'ACS `/login/saml2/sso/acs`, le SLO `/logout/saml` et redirige vers Keycloak selon les bindings SAML.
-- `Demo2Application` active JAX-RS sous `/api`.
+- `Demo2Application` expose explicitement les ressources JAX-RS (enregistrement par web.xml).
 - `WhoAmIResource` lit le `SamlPrincipal` en session (`saml.principal`) et renvoie ses attributs au format JSON.
 - `SamlErrorServlet` sert un message simple sur `/saml/error` en cas d'erreur SAML.
 

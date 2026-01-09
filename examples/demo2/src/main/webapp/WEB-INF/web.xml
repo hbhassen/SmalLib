@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0"
+         metadata-complete="true">
+
+    <display-name>demo2</display-name>
+
+    <listener>
+        <listener-class>com.hmiso.saml.integration.SamlBootstrapListener</listener-class>
+    </listener>
+
+    <filter>
+        <filter-name>SamlJakartaFilter</filter-name>
+        <filter-class>com.hmiso.saml.integration.SamlJakartaFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SamlJakartaFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <context-param>
+        <param-name>resteasy.servlet.mapping.prefix</param-name>
+        <param-value>/api</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>JaxRsServlet</servlet-name>
+        <servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+        <init-param>
+            <param-name>jakarta.ws.rs.Application</param-name>
+            <param-value>com.hmiso.examples.demo2.Demo2Application</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>JaxRsServlet</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>SamlErrorServlet</servlet-name>
+        <servlet-class>com.hmiso.examples.demo2.SamlErrorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SamlErrorServlet</servlet-name>
+        <url-pattern>/saml/error</url-pattern>
+    </servlet-mapping>
+</web-app>
