@@ -70,11 +70,16 @@ Cette application `demo2` illustre l'utilisation de la librairie **SmalLib** dan
 ```
 
 ## Architecture
-- `SamlBootstrapListener` construit la configuration SAML (SP + IdP Keycloak), instancie le `SamlAuthenticationFilterHelper` et l'enregistre dans le contexte Servlet.
-- `SamlJakartaFilter` protège tous les chemins, gère l'ACS `/login/saml2/sso/acs`, le SLO `/logout/saml` et redirige vers Keycloak selon les bindings SAML.
+- `SamlBootstrapListener` et `SamlJakartaFilter` sont fournis par SmalLib et se configurent via `saml-config.yml`.
+- Le listener charge la configuration SAML (SP + IdP) et prepare le `SamlAuthenticationFilterHelper`.
+- Le filtre protege les chemins, gere l'ACS `/login/saml2/sso/acs`, le SLO `/logout/saml` et redirige vers Keycloak selon les bindings SAML.
 - `Demo2Application` active JAX-RS sous `/api`.
 - `WhoAmIResource` lit le `SamlPrincipal` en session (`saml.principal`) et renvoie ses attributs au format JSON.
 - `SamlErrorServlet` sert un message simple sur `/saml/error` en cas d'erreur SAML.
+
+## Configuration YAML
+La configuration SAML est chargee depuis `src/main/resources/saml-config.yml`.
+Pour utiliser un fichier externe, definir la propriete systeme `saml.config.path` (ou la variable d'environnement `SAML_CONFIG_PATH`) vers un chemin de fichier.
 
 ## Construction et déploiement
 1. Installer la librairie SmalLib dans votre repository Maven local (à la racine du dépôt) :

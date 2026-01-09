@@ -1,0 +1,36 @@
+app:
+  protected-paths:
+    - "/api/*"
+  session-attribute-key: "saml.principal"
+  error-path: "/saml/error"
+  relay-state-ttl-minutes: 5
+
+service-provider:
+  entity-id: "saml-sp"
+  base-url: "http://localhost:8080"
+  acs-path: "/login/saml2/sso/acs"
+  slo-path: "/logout/saml"
+  name-id-format: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+  authn-request-binding: "HTTP_POST"
+  want-assertions-signed: true
+  supported-name-id-formats:
+    - "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+
+identity-provider:
+  entity-id: "saml-realm"
+  single-sign-on-service-url: "https://localhost:8443/realms/saml-realm/protocol/saml"
+  single-logout-service-url: "https://localhost:8443/realms/saml-realm/protocol/saml"
+  metadata-url: "https://localhost:8443/realms/saml-realm/protocol/saml/descriptor"
+  want-assertions-signed: true
+  want-messages-signed: true
+  supported-bindings:
+    - "HTTP_POST"
+    - "HTTP_REDIRECT"
+
+security:
+  clock-skew: "PT2M"
+  signature-algorithm: "rsa-sha256"
+  digest-algorithm: "sha256"
+  encryption-algorithm: "aes256"
+  force-https-redirect: false
+  enable-detailed-logging: true

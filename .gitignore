@@ -1,2 +1,6 @@
 /target
 **/target
+
+# Local secrets/exports (GPG key artifacts) - do not commit
+/key.bin
+/private.b64

@@ -1,7 +1,7 @@
 # Journal de remediation SAML / demo2
 
 ## Code et configuration
-- **Context path** : ACS et SLO incluent maintenant le context path du WAR `/demo2` (SamlDemo2Configuration, SamlBootstrapListener).
+- **Context path** : ACS et SLO incluent maintenant le context path du WAR `/demo2` (SamlAppYamlConfigLoader, SamlBootstrapListener).
 - **Filtre** : chemins proteges, ACS et SLO alignes sur le context path (`/demo2/api/*`, `/demo2/login/saml2/sso/acs`, `/demo2/logout/saml`).
 - **AuthnRequest** : construction SAML 2.0 valide (namespaces, Version, Issuer, NameIDPolicy, ProtocolBinding) dans `src/main/java/com/hmiso/saml/saml/AuthnRequestBuilder.java`.
 - **RelayState / retour post-ACS** : le filtre enregistre et restaure l'URL initiale via `RelayStateStore` pour rediriger vers l'endpoint d'origine après ACS (`src/main/java/com/hmiso/saml/integration/SamlAuthenticationFilterHelper.java`).

@@ -163,16 +163,20 @@ class SamlIntegrationHelpersTest {
         when(request.getSession(false)).thenReturn(session);
         var response = mock(jakarta.servlet.http.HttpServletResponse.class);
         AtomicBoolean redirected = new AtomicBoolean();
+        java.util.concurrent.atomic.AtomicReference<String> redirectTarget = new java.util.concurrent.atomic.AtomicReference<>();
         doAnswer(invocation -> {
+            redirectTarget.set(invocation.getArgument(0));
             redirected.set(true);
             return null;
-        }).when(response).sendRedirect(configuration.getIdentityProvider().getSingleLogoutServiceUrl().toString());
+        }).when(response).sendRedirect(anyString());
 
         helper.handleSloRequest(request, response);
 
         assertTrue(invalidated.get());
         assertTrue(logoutAudited.get());
         assertTrue(redirected.get());
+        assertTrue(redirectTarget.get().startsWith(configuration.getIdentityProvider().getSingleLogoutServiceUrl()
+                + "?SAMLRequest="));
     }
 
     @Test

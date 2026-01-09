@@ -3,11 +3,14 @@ package com.hmiso.saml.integration;
 import com.hmiso.saml.api.SamlPrincipal;
 import com.hmiso.saml.binding.BindingMessage;
 import com.hmiso.saml.binding.RelayStateStore;
+import com.hmiso.saml.config.BindingType;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -96,13 +99,21 @@ public class SamlAuthenticationFilterHelper {
             if (auditLogger != null) {
                 auditLogger.logLogoutInitiated(p);
             }
-            BindingMessage logout = config.getSamlServiceProvider().initiateLogout(p.getSessionIndex(), request.getRequestURI());
+            BindingMessage logout = config.getSamlServiceProvider().initiateLogout(p, null);
             if (auditLogger != null) {
                 auditLogger.logLogoutSuccess(p.getSessionIndex());
             }
             if (response != null) {
                 try {
-                    response.sendRedirect(logout.getDestination().toString());
+                    if (logout.getBindingType() == BindingType.HTTP_REDIRECT) {
+                        String target = logout.getDestination() + "?SAMLRequest=" + urlEncode(logout.getPayload());
+                        if (logout.getRelayState() != null) {
+                            target += "&RelayState=" + urlEncode(logout.getRelayState());
+                        }
+                        response.sendRedirect(target);
+                    } else {
+                        renderPost(response, logout);
+                    }
                 } catch (IOException ignored) {
                     // nothing to do
                 }
@@ -128,5 +139,27 @@ public class SamlAuthenticationFilterHelper {
             return requestUri.startsWith(base);
         }
         return requestUri.equals(path);
+    }
+
+    private void renderPost(HttpServletResponse response, BindingMessage message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("text/html");
+        String relayStateInput = message.getRelayState() == null ? "" :
+                "<input type=\"hidden\" name=\"RelayState\" value=\"" + message.getRelayState() + "\" />";
+        String html = """
+                <html>
+                  <body onload=\"document.forms[0].submit()\">
+                    <form method=\"post\" action=\"%s\">\n
+                      <input type=\"hidden\" name=\"SAMLRequest\" value=\"%s\" />\n
+                      %s
+                    </form>
+                  </body>
+                </html>
+                """.formatted(message.getDestination(), message.getPayload(), relayStateInput);
+        response.getWriter().write(html);
+    }
+
+    private String urlEncode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }

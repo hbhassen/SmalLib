@@ -1,9 +1,7 @@
-package com.hmiso.examples.demo2;
+package com.hmiso.saml.integration;
 
 import com.hmiso.saml.binding.BindingMessage;
 import com.hmiso.saml.config.BindingType;
-import com.hmiso.saml.integration.SamlAuthenticationFilterConfig;
-import com.hmiso.saml.integration.SamlAuthenticationFilterHelper;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -19,15 +17,15 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+/**
+ * Servlet filter that handles ACS/SLO endpoints and redirects to the IdP when needed.
+ */
 @WebFilter("/*")
 public class SamlJakartaFilter implements Filter {
 
-    static final String CONFIG_KEY = "demo2.saml.config";
-    static final String HELPER_KEY = "demo2.saml.helper";
-
     @Override
     public void init(FilterConfig filterConfig) {
-        // Pas d'initialisation spécifique : la configuration est fournie par SamlBootstrapListener
+        // No-op: configuration is provided by SamlBootstrapListener.
     }
 
     @Override
@@ -37,9 +35,11 @@ public class SamlJakartaFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         SamlAuthenticationFilterConfig config = (SamlAuthenticationFilterConfig) request.getServletContext()
-                .getAttribute(CONFIG_KEY);
+                .getAttribute(SamlAppConfiguration.FILTER_CONFIG_CONTEXT_KEY);
         SamlAuthenticationFilterHelper helper = (SamlAuthenticationFilterHelper) request.getServletContext()
-                .getAttribute(HELPER_KEY);
+                .getAttribute(SamlAppConfiguration.HELPER_CONTEXT_KEY);
+        SamlAppConfiguration appConfig = (SamlAppConfiguration) request.getServletContext()
+                .getAttribute(SamlAppConfiguration.CONFIG_CONTEXT_KEY);
 
         if (config == null || helper == null) {
             chain.doFilter(request, response);
@@ -55,7 +55,8 @@ public class SamlJakartaFilter implements Filter {
             helper.handleSloRequest(httpRequest, httpResponse);
             return;
         }
-        if (path.startsWith("/saml/error")) {
+        String errorPath = appConfig != null ? appConfig.getErrorPath() : SamlAppConfiguration.DEFAULT_ERROR_PATH;
+        if (path.startsWith(errorPath)) {
             chain.doFilter(request, response);
             return;
         }
