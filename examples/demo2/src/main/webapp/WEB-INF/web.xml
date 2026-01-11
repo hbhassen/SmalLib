@@ -21,6 +21,15 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>ApiNavigationFilter</filter-name>
+        <filter-class>com.hmiso.examples.demo2.ApiNavigationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ApiNavigationFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>SamlJakartaFilter</filter-name>
         <filter-class>com.hmiso.saml.integration.SamlJakartaFilter</filter-class>
     </filter>

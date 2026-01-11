@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { App } from './app';
 import { AuthTokenInterceptor } from './auth-token.interceptor';
+import { SamlResponseInterceptor } from './saml-response.interceptor';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,11 @@ import { AuthTokenInterceptor } from './auth-token.interceptor';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthTokenInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: SamlResponseInterceptor,
       multi: true
     }
   ],
