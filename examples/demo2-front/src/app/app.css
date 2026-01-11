@@ -1,0 +1,8 @@
+.container {
+  font-family: Arial, sans-serif;
+  padding: 2rem;
+}
+
+.error {
+  color: #b00020;
+}

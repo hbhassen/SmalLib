@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
@@ -10,6 +10,15 @@
     <listener>
         <listener-class>com.hmiso.saml.integration.SamlBootstrapListener</listener-class>
     </listener>
+
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.hmiso.examples.demo2.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
 
     <filter>
         <filter-name>SamlJakartaFilter</filter-name>
