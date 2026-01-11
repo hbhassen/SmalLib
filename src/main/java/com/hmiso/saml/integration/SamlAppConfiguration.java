@@ -16,6 +16,7 @@ public final class SamlAppConfiguration {
     public static final Duration DEFAULT_RELAY_STATE_TTL = Duration.ofMinutes(5);
     public static final Duration DEFAULT_SESSION_MAX_TTL = Duration.ofMinutes(60);
     public static final Duration DEFAULT_JWT_TTL = Duration.ofSeconds(10);
+    public static final boolean DEFAULT_BLOCK_BROWSER_NAVIGATION = false;
 
     public static final String CONFIG_CONTEXT_KEY = "smalib.saml.app.config";
     public static final String FILTER_CONFIG_CONTEXT_KEY = "smalib.saml.filter.config";
@@ -32,6 +33,8 @@ public final class SamlAppConfiguration {
     private final String errorPath;
     private final Duration jwtTtl;
     private final String jwtSecret;
+    private final CorsConfiguration corsConfiguration;
+    private final boolean blockBrowserNavigation;
 
     public SamlAppConfiguration(SamlConfiguration samlConfiguration,
                                 String sessionAttributeKey,
@@ -43,7 +46,9 @@ public final class SamlAppConfiguration {
                                 Duration relayStateTtl,
                                 String errorPath,
                                 Duration jwtTtl,
-                                String jwtSecret) {
+                                String jwtSecret,
+                                CorsConfiguration corsConfiguration,
+                                boolean blockBrowserNavigation) {
         this.samlConfiguration = Objects.requireNonNull(samlConfiguration, "samlConfiguration");
         this.sessionAttributeKey = Objects.requireNonNull(sessionAttributeKey, "sessionAttributeKey");
         this.serverSessionAttributeKey = Objects.requireNonNull(serverSessionAttributeKey, "serverSessionAttributeKey");
@@ -55,6 +60,8 @@ public final class SamlAppConfiguration {
         this.errorPath = Objects.requireNonNull(errorPath, "errorPath");
         this.jwtTtl = Objects.requireNonNull(jwtTtl, "jwtTtl");
         this.jwtSecret = jwtSecret;
+        this.corsConfiguration = Objects.requireNonNull(corsConfiguration, "corsConfiguration");
+        this.blockBrowserNavigation = blockBrowserNavigation;
     }
 
     public SamlConfiguration getSamlConfiguration() {
@@ -99,5 +106,13 @@ public final class SamlAppConfiguration {
 
     public String getJwtSecret() {
         return jwtSecret;
+    }
+
+    public CorsConfiguration getCorsConfiguration() {
+        return corsConfiguration;
+    }
+
+    public boolean isBlockBrowserNavigation() {
+        return blockBrowserNavigation;
     }
 }

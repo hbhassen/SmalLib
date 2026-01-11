@@ -113,7 +113,16 @@ class SamlJakartaFilterTest {
                 Duration.ofMinutes(5),
                 "/saml/error",
                 SamlAppConfiguration.DEFAULT_JWT_TTL,
-                "secret"
+                "secret",
+                new CorsConfiguration(
+                        false,
+                        false,
+                        java.util.List.of(),
+                        CorsConfiguration.DEFAULT_ALLOWED_METHODS,
+                        CorsConfiguration.DEFAULT_ALLOWED_HEADERS,
+                        CorsConfiguration.DEFAULT_EXPOSE_HEADERS
+                ),
+                false
         );
         Map<String, Object> attributes = new HashMap<>();
         attributes.put(SamlAppConfiguration.FILTER_CONFIG_CONTEXT_KEY, config);

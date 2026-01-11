@@ -104,6 +104,24 @@ Ajouter `WEB-INF/web.xml` pour declarer la configuration servlet :
     </listener>
 
     <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.hmiso.saml.integration.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>ApiNavigationFilter</filter-name>
+        <filter-class>com.hmiso.saml.integration.ApiNavigationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ApiNavigationFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>SamlJakartaFilter</filter-name>
         <filter-class>com.hmiso.saml.integration.SamlJakartaFilter</filter-class>
     </filter>
@@ -162,6 +180,21 @@ app:
     - "/api/*"
   session-attribute-key: "saml.principal"
   error-path: "/saml/error"
+  cors-enabled: true
+  cors-allowed-origins:
+    - "http://localhost:4200"
+  cors-allowed-methods:
+    - "GET"
+    - "POST"
+    - "OPTIONS"
+  cors-allowed-headers:
+    - "Authorization"
+    - "Content-Type"
+    - "X-Requested-With"
+  cors-expose-headers:
+    - "X-Auth-Token"
+  cors-allow-credentials: true
+  block-browser-navigation: true
   relay-state-ttl-minutes: 5
 
 service-provider:

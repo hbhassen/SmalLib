@@ -5,6 +5,21 @@ app:
   server-session-attribute-key: "saml.server.session"
   session-max-minutes: 60
   error-path: "/saml/error"
+  cors-enabled: true
+  cors-allowed-origins:
+    - "http://localhost:4200"
+  cors-allowed-methods:
+    - "GET"
+    - "POST"
+    - "OPTIONS"
+  cors-allowed-headers:
+    - "Authorization"
+    - "Content-Type"
+    - "X-Requested-With"
+  cors-expose-headers:
+    - "X-Auth-Token"
+  cors-allow-credentials: true
+  block-browser-navigation: true
   relay-state-ttl-minutes: 5
 
 service-provider:

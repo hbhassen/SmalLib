@@ -127,6 +127,9 @@ public final class SamlAppYamlConfigLoader {
         Duration relayStateTtl = parseRelayStateTtl(app);
         Duration jwtTtl = parseJwtTtl(security);
         String jwtSecret = optionalString(security, "jwt-secret");
+        CorsConfiguration corsConfiguration = buildCorsConfiguration(app);
+        boolean blockBrowserNavigation = optionalBoolean(app, "block-browser-navigation",
+                SamlAppConfiguration.DEFAULT_BLOCK_BROWSER_NAVIGATION);
 
         return new SamlAppConfiguration(
                 samlConfiguration,
@@ -139,8 +142,34 @@ public final class SamlAppYamlConfigLoader {
                 relayStateTtl,
                 errorPath,
                 jwtTtl,
-                jwtSecret
+                jwtSecret,
+                corsConfiguration,
+                blockBrowserNavigation
         );
+    }
+
+    private CorsConfiguration buildCorsConfiguration(Map<String, Object> app) {
+        List<String> allowedOrigins = stringList(app, "cors-allowed-origins");
+        boolean enabled = optionalBoolean(app, "cors-enabled", !allowedOrigins.isEmpty());
+        if (allowedOrigins.isEmpty()) {
+            enabled = false;
+        }
+
+        List<String> allowedMethods = stringList(app, "cors-allowed-methods");
+        if (allowedMethods.isEmpty()) {
+            allowedMethods = CorsConfiguration.DEFAULT_ALLOWED_METHODS;
+        }
+        List<String> allowedHeaders = stringList(app, "cors-allowed-headers");
+        if (allowedHeaders.isEmpty()) {
+            allowedHeaders = CorsConfiguration.DEFAULT_ALLOWED_HEADERS;
+        }
+        List<String> exposeHeaders = stringList(app, "cors-expose-headers");
+        if (exposeHeaders.isEmpty()) {
+            exposeHeaders = CorsConfiguration.DEFAULT_EXPOSE_HEADERS;
+        }
+        boolean allowCredentials = optionalBoolean(app, "cors-allow-credentials", true);
+        return new CorsConfiguration(enabled, allowCredentials, allowedOrigins, allowedMethods, allowedHeaders,
+                exposeHeaders);
     }
 
     private Duration parseRelayStateTtl(Map<String, Object> app) {

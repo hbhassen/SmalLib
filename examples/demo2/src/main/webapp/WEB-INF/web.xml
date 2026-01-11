@@ -13,7 +13,7 @@
 
     <filter>
         <filter-name>CorsFilter</filter-name>
-        <filter-class>com.hmiso.examples.demo2.CorsFilter</filter-class>
+        <filter-class>com.hmiso.saml.integration.CorsFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>CorsFilter</filter-name>
@@ -22,7 +22,7 @@
 
     <filter>
         <filter-name>ApiNavigationFilter</filter-name>
-        <filter-class>com.hmiso.examples.demo2.ApiNavigationFilter</filter-class>
+        <filter-class>com.hmiso.saml.integration.ApiNavigationFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>ApiNavigationFilter</filter-name>

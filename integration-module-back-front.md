@@ -6,10 +6,9 @@ permettre la lecture du header X-Auth-Token, l'envoi du cookie de session
 et la redirection SSO via HTTP_POST.
 
 ## Changements cote backend (demo2)
-1) Ajout d'un filtre CORS:
-   - Fichier: examples/demo2/src/main/java/com/hmiso/examples/demo2/CorsFilter.java
-   - Autorise l'origine http://localhost:4200
-   - Expose le header X-Auth-Token
+1) Ajout des filtres CORS + blocage navigation directe (via SmalLib):
+   - Filtres: com.hmiso.saml.integration.CorsFilter et ApiNavigationFilter
+   - Configures via saml-config.yml (origines, headers, blocage navigation)
    - Supporte OPTIONS (preflight)
 
 2) Declaration du filtre dans web.xml:
@@ -22,6 +21,15 @@ Headers CORS renvoyes:
 - Access-Control-Allow-Methods: GET,POST,OPTIONS
 - Access-Control-Allow-Headers: Authorization,Content-Type,X-Requested-With
 - Access-Control-Expose-Headers: X-Auth-Token
+
+Parametres YAML (exemple):
+- app.cors-enabled: true
+- app.cors-allowed-origins: ["http://localhost:4200"]
+- app.cors-allowed-methods: ["GET","POST","OPTIONS"]
+- app.cors-allowed-headers: ["Authorization","Content-Type","X-Requested-With"]
+- app.cors-expose-headers: ["X-Auth-Token"]
+- app.cors-allow-credentials: true
+- app.block-browser-navigation: true
 
 ## Changements cote frontend (demo2-front)
 1) Envoi du cookie de session pour l'appel initial:
