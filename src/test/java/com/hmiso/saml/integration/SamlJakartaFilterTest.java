@@ -122,6 +122,7 @@ class SamlJakartaFilterTest {
                         CorsConfiguration.DEFAULT_ALLOWED_HEADERS,
                         CorsConfiguration.DEFAULT_EXPOSE_HEADERS
                 ),
+                false,
                 false
         );
         Map<String, Object> attributes = new HashMap<>();

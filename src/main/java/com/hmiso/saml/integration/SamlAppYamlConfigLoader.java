@@ -130,6 +130,8 @@ public final class SamlAppYamlConfigLoader {
         CorsConfiguration corsConfiguration = buildCorsConfiguration(app);
         boolean blockBrowserNavigation = optionalBoolean(app, "block-browser-navigation",
                 SamlAppConfiguration.DEFAULT_BLOCK_BROWSER_NAVIGATION);
+        boolean jaspicEnabled = optionalBoolean(app, "jaspic-enabled",
+                SamlAppConfiguration.DEFAULT_JASPIC_ENABLED);
 
         return new SamlAppConfiguration(
                 samlConfiguration,
@@ -144,7 +146,8 @@ public final class SamlAppYamlConfigLoader {
                 jwtTtl,
                 jwtSecret,
                 corsConfiguration,
-                blockBrowserNavigation
+                blockBrowserNavigation,
+                jaspicEnabled
         );
     }
 

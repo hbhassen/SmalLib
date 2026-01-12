@@ -70,3 +70,4 @@ Parametres YAML (exemple):
 - Le header X-Auth-Token est lisible cote Angular grace a Access-Control-Expose-Headers.
 - L'envoi du cookie de session est possible grace a withCredentials + Allow-Credentials.
 - Le POST SSO est gere en reconstruisant le formulaire HTML cote front.
+- JASPIC (app.jaspic-enabled) valide le Bearer JWT cote conteneur, puis la session serveur est verifiee via SamlServerSessionFilter.

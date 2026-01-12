@@ -8,22 +8,29 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
 
 public class CorsFilter implements Filter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);
+
     private volatile CorsConfiguration corsConfiguration;
 
     @Override
     public void init(FilterConfig filterConfig) {
+        LOGGER.info("CorsFilter init start");
         if (filterConfig == null) {
+            LOGGER.info("CorsFilter init end (no config)");
             return;
         }
         Object config = filterConfig.getServletContext().getAttribute(SamlAppConfiguration.CONFIG_CONTEXT_KEY);
         if (config instanceof SamlAppConfiguration) {
             this.corsConfiguration = ((SamlAppConfiguration) config).getCorsConfiguration();
         }
+        LOGGER.info("CorsFilter init end");
     }
 
     @Override
@@ -31,31 +38,44 @@ public class CorsFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
+        String method = httpRequest.getMethod();
+        String path = httpRequest.getRequestURI();
+        LOGGER.info("CorsFilter doFilter start method={} path={}", method, path);
 
-        CorsConfiguration corsConfig = resolveCorsConfiguration(httpRequest);
-        if (corsConfig == null || !corsConfig.isEnabled()) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        String origin = httpRequest.getHeader("Origin");
-        if (origin != null && isAllowedOrigin(origin, corsConfig)) {
-            httpResponse.setHeader("Access-Control-Allow-Origin", origin);
-            httpResponse.setHeader("Vary", "Origin");
-            if (corsConfig.isAllowCredentials()) {
-                httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
+        try {
+            CorsConfiguration corsConfig = resolveCorsConfiguration(httpRequest);
+            if (corsConfig == null || !corsConfig.isEnabled()) {
+                chain.doFilter(request, response);
+                return;
             }
-            setCsvHeader(httpResponse, "Access-Control-Allow-Methods", corsConfig.getAllowedMethods());
-            setCsvHeader(httpResponse, "Access-Control-Allow-Headers", corsConfig.getAllowedHeaders());
-            setCsvHeader(httpResponse, "Access-Control-Expose-Headers", corsConfig.getExposeHeaders());
-        }
 
-        if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
-            httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            return;
-        }
+            String origin = httpRequest.getHeader("Origin");
+            if (origin != null && isAllowedOrigin(origin, corsConfig)) {
+                httpResponse.setHeader("Access-Control-Allow-Origin", origin);
+                httpResponse.setHeader("Vary", "Origin");
+                if (corsConfig.isAllowCredentials()) {
+                    httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
+                }
+                setCsvHeader(httpResponse, "Access-Control-Allow-Methods", corsConfig.getAllowedMethods());
+                setCsvHeader(httpResponse, "Access-Control-Allow-Headers", corsConfig.getAllowedHeaders());
+                setCsvHeader(httpResponse, "Access-Control-Expose-Headers", corsConfig.getExposeHeaders());
+            }
 
-        chain.doFilter(request, response);
+            if ("OPTIONS".equalsIgnoreCase(method)) {
+                httpResponse.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                return;
+            }
+
+            chain.doFilter(request, response);
+        } finally {
+            LOGGER.info("CorsFilter doFilter end method={} path={}", method, path);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        LOGGER.info("CorsFilter destroy start");
+        LOGGER.info("CorsFilter destroy end");
     }
 
     private CorsConfiguration resolveCorsConfiguration(HttpServletRequest request) {

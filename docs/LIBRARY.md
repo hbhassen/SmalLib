@@ -10,7 +10,7 @@ Cette documentation synthétise les éléments clés de `SPECIFICATION.md`, `ttd
 - **security** : initialisation OpenSAML, signature/chiffrement, résolution de keystores.
 - **metadata** : parsing `EntityDescriptor` et cache TTL.
 - **util** : utilitaires XML, horodatages, compression, logs.
-- **integration** : filtres Servlet et module JASPIC + hooks d'audit/erreur avec helpers (`SamlAuthenticationFilterHelper`,
+- **integration** : filtres Servlet et JASPIC (Bearer JWT) + hooks d'audit/erreur avec helpers (`SamlAuthenticationFilterHelper`,
   `SamlSessionHelper`, `SessionTimeoutPolicy`, `SamlServerAuthModuleHelper`, `WildFlySecurityMappingHelper`, `JaasHelper`) pour
   WildFly/Servlet.
 
@@ -52,6 +52,7 @@ app:
     - "/api/*"
   session-attribute-key: "saml.principal"
   error-path: "/saml/error"
+  jaspic-enabled: true
   relay-state-ttl-minutes: 5
 
 service-provider:

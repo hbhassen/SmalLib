@@ -20,6 +20,7 @@ app:
     - "X-Auth-Token"
   cors-allow-credentials: true
   block-browser-navigation: true
+  jaspic-enabled: true
   relay-state-ttl-minutes: 5
 
 service-provider:

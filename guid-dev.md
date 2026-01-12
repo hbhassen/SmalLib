@@ -44,6 +44,7 @@ Creer `module.xml` dans `...modules\com\hmiso\smalib\main` :
     </resources>
     <dependencies>
         <module name="jakarta.servlet.api"/>
+        <module name="jakarta.security.auth.message.api"/>
         <module name="org.slf4j"/>
         <module name="java.desktop"/>
     </dependencies>
@@ -122,6 +123,15 @@ Ajouter `WEB-INF/web.xml` pour declarer la configuration servlet :
     </filter-mapping>
 
     <filter>
+        <filter-name>SamlServerSessionFilter</filter-name>
+        <filter-class>com.hmiso.saml.integration.SamlServerSessionFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SamlServerSessionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>SamlJakartaFilter</filter-name>
         <filter-class>com.hmiso.saml.integration.SamlJakartaFilter</filter-class>
     </filter>
@@ -129,6 +139,10 @@ Ajouter `WEB-INF/web.xml` pour declarer la configuration servlet :
         <filter-name>SamlJakartaFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+    </login-config>
 
     <context-param>
         <param-name>resteasy.servlet.mapping.prefix</param-name>
@@ -163,7 +177,22 @@ Ajouter `WEB-INF/web.xml` pour declarer la configuration servlet :
 Notes :
 - Le listener charge la configuration YAML et initialise le filtre.
 - Le filtre gere ACS/SLO et la redirection vers l'IdP.
+- Si `app.jaspic-enabled` est actif, le listener enregistre le provider JASPIC pour la validation Bearer JWT.
+- Le `login-config` force l'authentification proactive et permet a JASPIC de s'executer avant les filtres.
 - JAX-RS est configure via web.xml (pas besoin de `@ApplicationPath`).
+
+### 3.4 Declaration jboss-web.xml (security-domain)
+Pour que WildFly rattache le deployment au `application-security-domain` Elytron, ajouter :
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web xmlns="http://www.jboss.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-web_11_1.xsd"
+           version="11.1">
+    <security-domain>other</security-domain>
+</jboss-web>
+```
 
 ## 4) Configuration YAML (saml-config.yml)
 
@@ -195,6 +224,7 @@ app:
     - "X-Auth-Token"
   cors-allow-credentials: true
   block-browser-navigation: true
+  jaspic-enabled: true
   relay-state-ttl-minutes: 5
 
 service-provider:
@@ -230,6 +260,7 @@ Notes importantes :
 - `app.protected-paths` est obligatoire.
 - Les chemins `app.*`, `acs-path` et `slo-path` sont automatiquement prefixes par le context path du WAR.
 - `force-https-redirect` force la redirection HTTPS sur le client si le serveur est derriere un proxy HTTPS.
+- `app.jaspic-enabled` active la validation du Bearer JWT (JASPIC) avant les filtres Servlet.
 
 ## 5) Securisation (recommandations)
 
@@ -310,3 +341,60 @@ copy examples\demo2\target\demo2.war WILDFLY_HOME\standalone\deployments\
 - `GET /api/whoami` redirige vers l'IdP.
 - L'authentification renvoie un JSON avec `nameId` et `sessionIndex`.
 - `GET /logout/saml` declenche le SLO et invalide la session.
+
+## 9) Configuration WildFly JASPIC (standalone.xml)
+
+Pour activer JASPIC dans WildFly, Elytron/Undertow doivent etre configures et `standalone.xml`
+doit etre sauvegarde avant modification. Dans WildFly 31, le mecanisme HTTP `JASPIC`
+n'est pas expose par defaut : utilisez `auth-method=BASIC` pour activer l'authentification
+proactive, JASPIC sera execute en amont via `enable-jaspi=true`.
+
+### 9.1 Undertow : activer le factory HTTP avec JASPIC
+Dans le subsystem Undertow, remplacer l'application security domain :
+
+```xml
+<application-security-domain name="other"
+                             http-authentication-factory="application-http-authentication"
+                             enable-jaspi="true"
+                             integrated-jaspi="true"/>
+```
+
+Activer l'authentification proactive pour declencher JASPIC meme sans contraintes :
+
+```xml
+<servlet-container name="default" proactive-authentication="true">
+    <jsp-config/>
+    <websockets/>
+</servlet-container>
+```
+
+### 9.2 Elytron : ajouter JASPIC au factory HTTP
+
+```xml
+<http-authentication-factory name="application-http-authentication"
+                             security-domain="ApplicationDomain"
+                             http-server-mechanism-factory="global">
+    <mechanism-configuration>
+        <mechanism mechanism-name="BASIC">
+            <mechanism-realm realm-name="ApplicationRealm"/>
+        </mechanism>
+    </mechanism-configuration>
+</http-authentication-factory>
+```
+
+### 9.3 Elytron : definir la configuration JASPIC SmalLib
+
+```xml
+<jaspi>
+    <jaspi-configuration name="smalib-jaspi" layer="HttpServlet" application-context="*"
+                         description="SmalLib JWT JASPIC">
+        <server-auth-modules>
+            <server-auth-module class-name="com.hmiso.saml.integration.SamlJwtServerAuthModule"
+                                module="com.hmiso.smalib"
+                                flag="REQUIRED"/>
+        </server-auth-modules>
+    </jaspi-configuration>
+</jaspi>
+```
+
+Apres modification : redemarrer WildFly.

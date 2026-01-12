@@ -11,6 +11,8 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -22,10 +24,13 @@ import java.util.Optional;
  */
 @WebFilter("/*")
 public class SamlJakartaFilter implements Filter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SamlJakartaFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) {
+        LOGGER.info("SamlJakartaFilter init start");
         // No-op: configuration is provided by SamlBootstrapListener.
+        LOGGER.info("SamlJakartaFilter init end");
     }
 
     @Override
@@ -33,58 +38,66 @@ public class SamlJakartaFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-        SamlAuthenticationFilterConfig config = (SamlAuthenticationFilterConfig) request.getServletContext()
-                .getAttribute(SamlAppConfiguration.FILTER_CONFIG_CONTEXT_KEY);
-        SamlAuthenticationFilterHelper helper = (SamlAuthenticationFilterHelper) request.getServletContext()
-                .getAttribute(SamlAppConfiguration.HELPER_CONTEXT_KEY);
-        SamlAppConfiguration appConfig = (SamlAppConfiguration) request.getServletContext()
-                .getAttribute(SamlAppConfiguration.CONFIG_CONTEXT_KEY);
-
-        if (config == null || helper == null) {
-            chain.doFilter(request, response);
-            return;
-        }
-
+        String method = httpRequest.getMethod();
         String path = httpRequest.getRequestURI();
-        if (path.equals(config.getAcsPath()) && "POST".equalsIgnoreCase(httpRequest.getMethod())) {
-            helper.handleAcsRequest(httpRequest, httpResponse);
-            return;
-        }
-        if (path.equals(config.getSloPath())) {
-            helper.handleSloRequest(httpRequest, httpResponse);
-            return;
-        }
-        String errorPath = appConfig != null ? appConfig.getErrorPath() : SamlAppConfiguration.DEFAULT_ERROR_PATH;
-        if (path.startsWith(errorPath)) {
-            chain.doFilter(request, response);
-            return;
-        }
+        LOGGER.info("SamlJakartaFilter doFilter start method={} path={}", method, path);
 
-        if (!helper.validateJwtFromRequest(httpRequest, httpResponse)) {
-            return;
-        }
-        Optional<BindingMessage> redirect = helper.shouldRedirectToIdP(httpRequest, httpResponse);
-        if (redirect.isPresent()) {
-            BindingMessage message = redirect.get();
-            if (message.getBindingType() == BindingType.HTTP_REDIRECT) {
-                String target = message.getDestination() + "?SAMLRequest=" + urlEncode(message.getPayload());
-                if (message.getRelayState() != null) {
-                    target += "&RelayState=" + urlEncode(message.getRelayState());
-                }
-                httpResponse.sendRedirect(target);
-            } else {
-                renderPost(httpResponse, message);
+        try {
+            SamlAuthenticationFilterConfig config = (SamlAuthenticationFilterConfig) request.getServletContext()
+                    .getAttribute(SamlAppConfiguration.FILTER_CONFIG_CONTEXT_KEY);
+            SamlAuthenticationFilterHelper helper = (SamlAuthenticationFilterHelper) request.getServletContext()
+                    .getAttribute(SamlAppConfiguration.HELPER_CONTEXT_KEY);
+            SamlAppConfiguration appConfig = (SamlAppConfiguration) request.getServletContext()
+                    .getAttribute(SamlAppConfiguration.CONFIG_CONTEXT_KEY);
+
+            if (config == null || helper == null) {
+                chain.doFilter(request, response);
+                return;
             }
-            return;
-        }
 
-        chain.doFilter(request, response);
-        helper.attachJwtHeader(httpRequest, httpResponse);
+            if (path.equals(config.getAcsPath()) && "POST".equalsIgnoreCase(method)) {
+                helper.handleAcsRequest(httpRequest, httpResponse);
+                return;
+            }
+            if (path.equals(config.getSloPath())) {
+                helper.handleSloRequest(httpRequest, httpResponse);
+                return;
+            }
+            String errorPath = appConfig != null ? appConfig.getErrorPath() : SamlAppConfiguration.DEFAULT_ERROR_PATH;
+            if (path.startsWith(errorPath)) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            if (!helper.validateJwtFromRequest(httpRequest, httpResponse)) {
+                return;
+            }
+            Optional<BindingMessage> redirect = helper.shouldRedirectToIdP(httpRequest, httpResponse);
+            if (redirect.isPresent()) {
+                BindingMessage message = redirect.get();
+                if (message.getBindingType() == BindingType.HTTP_REDIRECT) {
+                    String target = message.getDestination() + "?SAMLRequest=" + urlEncode(message.getPayload());
+                    if (message.getRelayState() != null) {
+                        target += "&RelayState=" + urlEncode(message.getRelayState());
+                    }
+                    httpResponse.sendRedirect(target);
+                } else {
+                    renderPost(httpResponse, message);
+                }
+                return;
+            }
+
+            chain.doFilter(request, response);
+            helper.attachJwtHeader(httpRequest, httpResponse);
+        } finally {
+            LOGGER.info("SamlJakartaFilter doFilter end method={} path={}", method, path);
+        }
     }
 
     @Override
     public void destroy() {
+        LOGGER.info("SamlJakartaFilter destroy start");
+        LOGGER.info("SamlJakartaFilter destroy end");
     }
 
     private void renderPost(HttpServletResponse response, BindingMessage message) throws IOException {

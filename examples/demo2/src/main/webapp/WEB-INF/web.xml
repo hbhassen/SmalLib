@@ -30,6 +30,15 @@
     </filter-mapping>
 
     <filter>
+        <filter-name>SamlServerSessionFilter</filter-name>
+        <filter-class>com.hmiso.saml.integration.SamlServerSessionFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SamlServerSessionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
         <filter-name>SamlJakartaFilter</filter-name>
         <filter-class>com.hmiso.saml.integration.SamlJakartaFilter</filter-class>
     </filter>
@@ -37,6 +46,10 @@
         <filter-name>SamlJakartaFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>
+    </login-config>
 
     <context-param>
         <param-name>resteasy.servlet.mapping.prefix</param-name>

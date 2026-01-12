@@ -17,6 +17,7 @@ public final class SamlAppConfiguration {
     public static final Duration DEFAULT_SESSION_MAX_TTL = Duration.ofMinutes(60);
     public static final Duration DEFAULT_JWT_TTL = Duration.ofSeconds(10);
     public static final boolean DEFAULT_BLOCK_BROWSER_NAVIGATION = false;
+    public static final boolean DEFAULT_JASPIC_ENABLED = false;
 
     public static final String CONFIG_CONTEXT_KEY = "smalib.saml.app.config";
     public static final String FILTER_CONFIG_CONTEXT_KEY = "smalib.saml.filter.config";
@@ -35,6 +36,7 @@ public final class SamlAppConfiguration {
     private final String jwtSecret;
     private final CorsConfiguration corsConfiguration;
     private final boolean blockBrowserNavigation;
+    private final boolean jaspicEnabled;
 
     public SamlAppConfiguration(SamlConfiguration samlConfiguration,
                                 String sessionAttributeKey,
@@ -48,7 +50,8 @@ public final class SamlAppConfiguration {
                                 Duration jwtTtl,
                                 String jwtSecret,
                                 CorsConfiguration corsConfiguration,
-                                boolean blockBrowserNavigation) {
+                                boolean blockBrowserNavigation,
+                                boolean jaspicEnabled) {
         this.samlConfiguration = Objects.requireNonNull(samlConfiguration, "samlConfiguration");
         this.sessionAttributeKey = Objects.requireNonNull(sessionAttributeKey, "sessionAttributeKey");
         this.serverSessionAttributeKey = Objects.requireNonNull(serverSessionAttributeKey, "serverSessionAttributeKey");
@@ -62,6 +65,7 @@ public final class SamlAppConfiguration {
         this.jwtSecret = jwtSecret;
         this.corsConfiguration = Objects.requireNonNull(corsConfiguration, "corsConfiguration");
         this.blockBrowserNavigation = blockBrowserNavigation;
+        this.jaspicEnabled = jaspicEnabled;
     }
 
     public SamlConfiguration getSamlConfiguration() {
@@ -114,5 +118,9 @@ public final class SamlAppConfiguration {
 
     public boolean isBlockBrowserNavigation() {
         return blockBrowserNavigation;
+    }
+
+    public boolean isJaspicEnabled() {
+        return jaspicEnabled;
     }
 }
