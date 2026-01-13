@@ -1,0 +1,7 @@
+<main class="container">
+  <h1>{{ message() }}</h1>
+  <p *ngIf="error() as err" class="error">{{ err }}</p>
+  <button type="button" (click)="onFetchMessage()">Afficher message</button>
+  <p *ngIf="apiMessage() as msg">{{ msg }}</p>
+  <p *ngIf="apiError() as apiErr" class="error">{{ apiErr }}</p>
+</main>
